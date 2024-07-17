@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiple YouTube Videos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #f4f4f4;
+            padding: 15px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+        .content {
+            flex-grow: 1;
+            padding: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            overflow-y: auto;
+        }
+        .video-container {
+            position: relative;
+            margin: 10px;
+        }
+        iframe {
+            width: 280px;
+            height: 158px;
+            border: none;
+        }
+        .video-list-item {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .video-list-item input {
+            flex-grow: 1;
+            padding: 5px;
+            margin-right: 5px;
+        }
+        .video-list-item button {
+            padding: 5px 10px;
+            background-color: red;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .video-list-item button:hover {
+            background-color: darkred;
+        }
+        .add-video {
+            margin-top: 20px;
+        }
+        .controls {
+            margin-top: 20px;
+        }
+        .controls button {
+            padding: 5px 10px;
+            margin-right: 5px;
+            background-color: blue;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .controls button:hover {
+            background-color: darkblue;
+        }
+        .remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            padding: 5px 10px;
+            background-color: red;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .remove-btn:hover {
+            background-color: darkred;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h3>Youtube Video Player </h3>
+        <div id="videoList"></div>
+        <div class="add-video">
+            <input type="text" id="newVideoId" placeholder="Add new video IDs, comma separated">
+            <button onclick="addVideo()">Add</button>
+        </div>
+        <div class="controls">
+            <button onclick="playAll()">Play All</button>
+            <button onclick="pauseAll()">Pause All</button>
+            <button onclick="muteAll()">Mute All</button>
+            <button onclick="unmuteAll()">Unmute All</button>
+        </div>
+    </div>
+    <div class="content" id="videoContent"></div>
+    <script>
+        function addVideo() {
+            var ids = document.getElementById('newVideoId').value;
+            if (ids) {
+                var videoList = document.getElementById('videoList');
+                var videoContent = document.getElementById('videoContent');
+                var idArray = ids.split(',');
+
+                idArray.forEach(function(id) {
+                    id = id.trim();
+                    if (id) {
+                        var listItemId = 'videoListItem_' + id;
+                        var containerId = 'videoContainer_' + id;
+
+                        var listItem = document.createElement('div');
+                        listItem.className = 'video-list-item';
+                        listItem.id = listItemId;
+                        listItem.innerHTML = '<input type="text" value="' + id + '" readonly><button onclick="removeVideo(\'' + listItemId + '\', \'' + containerId + '\')">X</button>';
+
+                        var videoContainer = document.createElement('div');
+                        videoContainer.className = 'video-container';
+                        videoContainer.id = containerId;
+                        videoContainer.innerHTML = '<iframe src="https://www.youtube.com/embed/' + id + '?enablejsapi=1" allowfullscreen></iframe><button class="remove-btn" onclick="removeVideo(\'' + listItemId + '\', \'' + containerId + '\')">X</button>';
+
+                        videoList.appendChild(listItem);
+                        videoContent.appendChild(videoContainer);
+                    }
+                });
+
+                document.getElementById('newVideoId').value = '';
+            }
+        }
+
+        function removeVideo(listItemId, containerId) {
+            var listItem = document.getElementById(listItemId);
+            var container = document.getElementById(containerId);
+
+            if (listItem) listItem.remove();
+            if (container) container.remove();
+        }
+
+        function playAll() {
+            var iframes = document.querySelectorAll('iframe');
+            iframes.forEach(function(iframe) {
+                iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+            });
+        }
+
+        function pauseAll() {
+            var iframes = document.querySelectorAll('iframe');
+            iframes.forEach(function(iframe) {
+                iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+            });
+        }
+
+        function muteAll() {
+            var iframes = document.querySelectorAll('iframe');
+            iframes.forEach(function(iframe) {
+                iframe.contentWindow.postMessage('{"event":"command","func":"mute","args":""}', '*');
+            });
+        }
+
+        function unmuteAll() {
+            var iframes = document.querySelectorAll('iframe');
+            iframes.forEach(function(iframe) {
+                iframe.contentWindow.postMessage('{"event":"command","func":"unMute","args":""}', '*');
+            });
+        }
+    </script>
+</body>
+</html>
